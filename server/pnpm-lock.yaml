@@ -11,6 +11,9 @@ importers:
       cookie-parser:
         specifier: ~1.4.4
         version: 1.4.7
+      crypto:
+        specifier: ^1.0.1
+        version: 1.0.1
       debug:
         specifier: ~2.6.9
         version: 2.6.9
@@ -26,6 +29,10 @@ importers:
       morgan:
         specifier: ~1.9.1
         version: 1.9.1
+    devDependencies:
+      dotenv:
+        specifier: ^17.2.3
+        version: 17.2.3
 
 packages:
 
@@ -126,6 +133,10 @@ packages:
     resolution: {integrity: sha512-yki5XnKuf750l50uGTllt6kKILY4nQ1eNIQatoXEByZ5dWgnKqbnqmTrBE5B4N7lrMJKQ2ytWMiTO2o0v6Ew/w==}
     engines: {node: '>= 0.6'}
 
+  crypto@1.0.1:
+    resolution: {integrity: sha512-VxBKmeNcqQdiUQUW2Tzq0t377b54N2bMtXO/qiLa+6eRRmmC4qT3D4OnTGoT/U6O9aklQ/jTwbOtRMTTY8G0Ig==}
+    deprecated: This package is no longer supported. It's now a built-in Node module. If you've depended on crypto, you should switch to the one that's built-in.
+
   css-parse@1.0.4:
     resolution: {integrity: sha512-pfstzKVRZiHprDXdsmtfH1HYUEw22lzjuHdnpe1hscwoQvgW2C5zDQIBE0RKoALEReTn9W1ECdY8uaT/kO4VfA==}
 
@@ -153,6 +164,10 @@ packages:
 
   destroy@1.0.4:
     resolution: {integrity: sha512-3NdhDuEXnfun/z7x9GOElY49LoqVHoGScmOKwmxhsS8N5Y+Z8KyPPDnaSzqWgYt/ji4mqwfTS34Htrk0zPIXVg==}
+
+  dotenv@17.2.3:
+    resolution: {integrity: sha512-JVUnt+DUIzu87TABbhPmNfVdBDt18BLOWjMUFJMSi/Qqg7NTYtabbvSNJGOJ7afbRuv9D/lngizHtP7QyLQ+9w==}
+    engines: {node: '>=12'}
 
   ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
@@ -505,6 +520,8 @@ snapshots:
 
   cookie@0.7.2: {}
 
+  crypto@1.0.1: {}
+
   css-parse@1.0.4: {}
 
   css-stringify@1.0.5: {}
@@ -523,6 +540,8 @@ snapshots:
   depd@1.1.2: {}
 
   destroy@1.0.4: {}
+
+  dotenv@17.2.3: {}
 
   ee-first@1.1.1: {}
 
