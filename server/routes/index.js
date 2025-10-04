@@ -28,7 +28,7 @@ router.post('/ask', async function (req, res, next) {
   // 判断是否需要调用工具
   const funCallPrompt = buildFunctionCallPrompt(question);
   const funCallResult = await callLLM(funCallPrompt);
-
+  console.log('funCallResult: ', funCallResult);
   let finalResponse = '';
 
   if (funCallResult.trim() === '无函数调用') {
@@ -52,14 +52,14 @@ router.post('/ask', async function (req, res, next) {
           try {
             const result = await toolsMap[funcName](args);
             toolsResult.push({
-              function: toolsMap[funcName],
+              function: funcName,
               args,
               result,
             });
           } catch (err) {
             console.error(`${funcName}工具调用失败`, err);
             toolsResult.push({
-              function: toolsMap[funcName],
+              function: funcName,
               args,
               result: `${funcName}工具调用失败`,
             });
@@ -67,7 +67,7 @@ router.post('/ask', async function (req, res, next) {
         } else {
           console.error(`${funcName}工具不存在,调用失败`);
           toolsResult.push({
-            function: toolsMap[funcName],
+            function: funcName,
             args,
             result: `${funcName}工具不存在,调用失败`,
           });

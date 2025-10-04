@@ -26,10 +26,10 @@ async function callLLM({ prompt, stream = false, callback }) {
   // 尝试连接到 Ollama 服务
   const response = await fetchWithTimeout(LLM_ENDPOINT, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}` },
     body: JSON.stringify({
       model: LLM_MODEL,
-      prompt,
+      messages: [{ role: 'user', content: prompt }],
       stream, // 是否开启流式，暂时先关闭
     }),
   });
@@ -40,7 +40,7 @@ async function callLLM({ prompt, stream = false, callback }) {
   // 非流式
   if (!stream) {
     const data = await response.json();
-    return data.response;
+    return data.choices?.[0]?.message?.content || '';
   }
 
   const reader = response.body.getReader();
@@ -56,11 +56,17 @@ async function callLLM({ prompt, stream = false, callback }) {
     const chunk = decoder.decode(value, { stream: true });
     const lines = chunk.split('\n').filter((line) => line.trim());
     for (const line of lines) {
+      // 根据deepseek流式返回
+      const jsonStr = line.slice(6);
+      if (jsonStr.includes('[DONE]')) {
+        continue;
+      }
       try {
-        const data = JSON.parse(line);
-        if (data.response) {
-          fullResponse += data.response;
-          callback?.(data.response);
+        const data = JSON.parse(jsonStr);
+        const chunk = data.choices?.[0]?.delta?.content;
+        if (chunk) {
+          fullResponse += chunk;
+          callback?.(chunk);
         }
       } catch (e) {
         console.error('JSON解析失败: ', e.message);
