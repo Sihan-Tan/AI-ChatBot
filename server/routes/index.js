@@ -27,17 +27,25 @@ router.post('/ask', async function (req, res, next) {
 
   // 判断是否需要调用工具
   const funCallPrompt = buildFunctionCallPrompt(question);
-  const funCallResult = await callLLM(funCallPrompt);
+  const conversationList = [
+    ...conversations,
+    {
+      role: 'user',
+      content: funCallPrompt,
+    },
+  ];
+  const funCallResult = await callLLM(conversationList);
   console.log('funCallResult: ', funCallResult);
   let finalResponse = '';
 
   if (funCallResult.trim() === '无函数调用') {
     const prompt = [
-      '你是一个中文智能助手, 请严格使用中文来回答用户问题',
-      ...conversations.map((item) => `${item.role === 'user' ? '用户' : '助手'}:${item.content}`),
-      `用户的问题:${question}`,
-    ].join('\n');
-
+      ...conversations,
+      {
+        role: 'user',
+        content: question,
+      },
+    ];
     finalResponse = await callLLMStream(prompt, (chunk) => {
       res.write(`${JSON.stringify({ response: chunk })}\n`);
     });
@@ -74,7 +82,14 @@ router.post('/ask', async function (req, res, next) {
         }
       }
       const answerPrompt = buildAnswerPrompt(question, toolsResult);
-      finalResponse = await callLLMStream(answerPrompt, (chunk) => {
+      const prompt = [
+        ...conversations,
+        {
+          role: 'user',
+          content: answerPrompt,
+        },
+      ];
+      finalResponse = await callLLMStream(prompt, (chunk) => {
         res.write(`${JSON.stringify({ response: chunk })}\n`);
       });
     } catch (err) {

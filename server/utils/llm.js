@@ -29,7 +29,7 @@ async function callLLM({ prompt, stream = false, callback }) {
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}` },
     body: JSON.stringify({
       model: LLM_MODEL,
-      messages: [{ role: 'user', content: prompt }],
+      messages: prompt,
       stream, // 是否开启流式，暂时先关闭
     }),
   });
