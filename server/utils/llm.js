@@ -22,31 +22,40 @@ async function fetchWithTimeout(url, options = {}, timeout = LLM_TIMEOUT_MS) {
   }
 }
 
-async function callLLM({ prompt, stream = false, callback }) {
+/**
+ *
+ * @param {*} prompt 用户的问题
+ * @param {*} tools 工具的数组
+ * @param {*} callback 流式回调函数
+ * @returns
+ */
+async function callLLM({ prompt, tools = null, callback }) {
+  const messages = [...prompt];
+  const requestBody = {
+    model: LLM_MODEL,
+    messages,
+    stream: true,
+  };
+
+  if (tools?.length) {
+    requestBody.tools = tools;
+  }
+
   // 尝试连接到 Ollama 服务
   const response = await fetchWithTimeout(LLM_ENDPOINT, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}` },
-    body: JSON.stringify({
-      model: LLM_MODEL,
-      messages: prompt,
-      stream, // 是否开启流式，暂时先关闭
-    }),
+    body: JSON.stringify(requestBody),
   });
   if (!response.ok) {
     throw new Error(`模型请求失败: ${response.status} : ${response.statusText}`);
-  }
-
-  // 非流式
-  if (!stream) {
-    const data = await response.json();
-    return data.choices?.[0]?.message?.content || '';
   }
 
   const reader = response.body.getReader();
   const decoder = new TextDecoder('utf-8');
 
   let fullResponse = '';
+  let toolCalls = []; // 用于存储需要调用的工具
 
   while (true) {
     const { done, value } = await reader.read();
@@ -63,25 +72,47 @@ async function callLLM({ prompt, stream = false, callback }) {
       }
       try {
         const data = JSON.parse(jsonStr);
-        const chunk = data.choices?.[0]?.delta?.content;
-        if (chunk) {
-          fullResponse += chunk;
-          callback?.(chunk);
+        const delta = data.choices?.[0]?.delta;
+        if (delta) {
+          const { content, tool_calls } = delta;
+          if (content) {
+            fullResponse = content;
+            callback?.(fullResponse);
+          }
+          if (tool_calls) {
+            for (const toolCall of tool_calls) {
+              const exisit = toolCalls.find((tc) => tc.index === toolCall.index);
+              if (exisit) {
+                // 说明已经存在， 可能需要合并参数
+                if (toolCall.function?.name) {
+                  exisit.function.name = toolCall.function.name;
+                }
+                if (toolCall.function?.arguments) {
+                  exisit.function.arguments += toolCall.function.arguments;
+                }
+              } else {
+                // 不存在需要推进去
+                toolCalls.push({ ...toolCall });
+              }
+            }
+          }
         }
       } catch (e) {
         console.error('JSON解析失败: ', e.message);
       }
     }
   }
+
+  if (toolCalls?.length) {
+    return {
+      content: fullResponse,
+      tool_calls: toolCalls,
+    };
+  }
+
   return fullResponse;
 }
 
 module.exports = {
-  callLLM: (prompt) => callLLM({ prompt }),
-  callLLMStream: (prompt, callback) =>
-    callLLM({
-      prompt,
-      stream: true,
-      callback,
-    }),
+  callLLM: (prompt, tools, callback) => callLLM({ prompt, tools, callback }),
 };

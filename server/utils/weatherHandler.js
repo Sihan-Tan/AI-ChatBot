@@ -59,6 +59,7 @@ async function getCityLocation(city) {
  * @param {*} date 日期
  */
 async function getWeather({ city, date }) {
+  console.log({ city, date }, 'getWeather');
   // 参考第三方服务商文档
   const formattedDate = formatDate(date);
   if (!formattedDate) {
