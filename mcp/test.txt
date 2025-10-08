@@ -1,0 +1,7 @@
+{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{"roots":{"listChanged":true},"sampling":{},"elicitation":{}},"clientInfo":{"name":"ExampleClient","title":"Example Client Display Name","version":"1.0.0"}}}
+
+{"jsonrpc":"2.0","id":1,"method":"tools/list"}
+
+{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"sum","arguments":{"a":1, "b":2}}}
+
+{ "jsonrpc": "2.0", "id": 2, "method": "tools/call", "params": { "name" :"createFile",  "arguments":{"filename": "./渡一MCP2.txt", "content": "Hello, 渡一MCP2!"}}}
